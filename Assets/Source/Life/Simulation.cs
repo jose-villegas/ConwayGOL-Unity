@@ -1,21 +1,22 @@
-﻿using OpenLife.World;
+﻿using OpenLife.Life.Interface;
+using OpenLife.World;
 using System;
 using System.Threading.Tasks;
 
 namespace OpenLife.Life
 {
-	public class Simulation
+	public class Simulation<T> where T : ICell, new()
 	{
-		private World.World<bool> _nextGeneration;
-		private World.World<bool> _world;
+		private World.World<T> _nextGeneration;
+		private World.World<T> _world;
 
 		public int Generations { get; private set; }
-		public Action<World.World<bool>> NextGenerationCompleted { get; private set; }
-		public World<bool> World { get => _world; }
+		public Action<World.World<T>> NextGenerationCompleted { get; private set; }
+		public World<T> World { get => _world; }
 
-		public void Start(World.World<bool> world)
+		public void Start(World.World<T> world)
 		{
-			_nextGeneration = new World.World<bool>(world.Size.x, world.Size.y, world.Size.z);
+			_nextGeneration = new World.World<T>(world.Size.x, world.Size.y, world.Size.z);
 			_world = world;
 
 			// start first generation
@@ -37,18 +38,20 @@ namespace OpenLife.Life
 			NextGenerationCompleted?.Invoke(this._world);
 		}
 
-		private int IsNeighborAlive(int x, int y, int offsetX, int offsetY)
+		private int IsNeighborAlive(int x, int y, int z, int offsetX, int offsetY, int offsetZ)
 		{
 			int result = 0;
 
 			int proposedOffsetX = x + offsetX;
 			int proposedOffsetY = y + offsetY;
+			int proposedOffsetZ = z + offsetZ;
 			bool outOfBounds = proposedOffsetX < 0 || proposedOffsetX >= _world.Size.x |
-							   proposedOffsetY < 0 || proposedOffsetY >= _world.Size.y;
+							   proposedOffsetY < 0 || proposedOffsetY >= _world.Size.y |
+							   proposedOffsetZ < 0 || proposedOffsetZ >= _world.Size.z;
 
 			if (!outOfBounds)
 			{
-				result = _world[x + offsetX, y + offsetY, 0] ? 1 : 0;
+				result = _world[x + offsetX, y + offsetY, z + offsetZ].IsAlive() ? 1 : 0;
 			}
 
 			return result;
@@ -60,28 +63,44 @@ namespace OpenLife.Life
 			{
 				for (int y = 0; y < _world.Size.y; y++)
 				{
-					int numberOfNeighbors = IsNeighborAlive(x, y, -1, 0)
-							+ IsNeighborAlive(x, y, -1, 1)
-							+ IsNeighborAlive(x, y, 0, 1)
-							+ IsNeighborAlive(x, y, 1, 1)
-							+ IsNeighborAlive(x, y, 1, 0)
-							+ IsNeighborAlive(x, y, 1, -1)
-							+ IsNeighborAlive(x, y, 0, -1)
-							+ IsNeighborAlive(x, y, -1, -1);
-
-					bool shouldLive = false;
-					bool isAlive = _world[x, y, 0];
-
-					if (isAlive && (numberOfNeighbors == 2 || numberOfNeighbors == 3))
+					for (int z = 0; z < _world.Size.z; z++)
 					{
-						shouldLive = true;
-					}
-					else if (!isAlive && numberOfNeighbors == 3) // zombification
-					{
-						shouldLive = true;
-					}
+						int numberOfNeighbors = 0;
 
-					_nextGeneration[x, y, 0] = shouldLive;
+						for (int i = -1; i < 2; i++)
+						{
+							for (int j = -1; j < 2; j++)
+							{
+								for (int k = -1; k < 2; k++)
+								{
+									if (i == 0 && j == 0 && k == 0) continue;
+
+									numberOfNeighbors += IsNeighborAlive(x, y, z, i, j, k);
+								}
+							}
+						}
+
+						bool shouldLive = false;
+						bool isAlive = _world[x, y, z].IsAlive();
+
+						if (isAlive && (numberOfNeighbors == 2 || numberOfNeighbors == 3))
+						{
+							shouldLive = true;
+						}
+						else if (!isAlive && numberOfNeighbors == 3) // zombification
+						{
+							shouldLive = true;
+						}
+
+						if (!shouldLive)
+						{
+							_nextGeneration[x, y, z].Kill();
+						}
+						else
+						{
+							_nextGeneration[x, y, z].Generate();
+						}
+					}
 				}
 			}
 		}
