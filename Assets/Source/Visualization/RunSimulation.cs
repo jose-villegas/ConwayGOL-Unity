@@ -11,64 +11,38 @@ namespace OpenLife.Visualization
 		[SerializeField]
 		private GameObject _asset;
 
-		private Simulation<Cell> _simulation;
-
-		private World.World<GameObject> _visualWorld;
+		private World.World<CellView> _world;
+		private Simulation<CellView> _simulation;
 
 		private void Start()
 		{
-			var worldFactory = new Generator<Cell>();
-			var world = worldFactory.Create(_worldSize.x, _worldSize.y, _worldSize.z);
+			var worldFactory = new Generator<CellView>();
+			_world = worldFactory.Create(_worldSize.x, _worldSize.y, _worldSize.z);
 
-			var visualWorldFactory = new Generator<GameObject>();
-			_visualWorld = visualWorldFactory.Create(_worldSize.x, _worldSize.y, _worldSize.z);
-
-			for (int x = 0; x < world.Size.x; x++)
+			for (int x = 0; x < _world.Size.x; x++)
 			{
-				for (int y = 0; y < world.Size.y; y++)
+				for (int y = 0; y < _world.Size.y; y++)
 				{
-					for (int z = 0; z < world.Size.z; z++)
+					for (int z = 0; z < _world.Size.z; z++)
 					{
-						_visualWorld[x, y, z] = Instantiate(_asset, Vector3.zero, Quaternion.identity);
-						_visualWorld[x, y, z].transform.SetParent(transform);
-						_visualWorld[x, y, z].transform.localPosition = new Vector3(x, y, z);
-					}
-				}
-			}
+						_world[x, y, z].Instance = Instantiate(_asset, Vector3.zero, Quaternion.identity);
+						_world[x, y, z].Instance.transform.SetParent(transform);
+						_world[x, y, z].Instance.transform.localPosition = new Vector3(x, y, z);
 
-			// Toggle cells
-			for (int x = 0; x < world.Size.x; x++)
-			{
-				for (int y = 0; y < world.Size.y; y++)
-				{
-					for (int z = 0; z < world.Size.z; z++)
-					{
 						if (Random.Range(0f, 1f) > 0.5f)
 						{
-							world[x, y, z].Generate();
+							_world[x, y, z].Generate();
 						}
 					}
 				}
 			}
 
-			_simulation = new Simulation<Cell>();
-			_simulation.Start(world);
-
-			//InvokeRepeating("Tick", 0, 0.1f);
+			_simulation = new Simulation<CellView>();
+			_simulation.Start(_world);
 		}
 
 		private void Update()
 		{
-			for (int x = 0; x < _simulation.World.Size.x; x++)
-			{
-				for (int y = 0; y < _simulation.World.Size.y; y++)
-				{
-					for (int z = 0; z < _simulation.World.Size.z; z++)
-					{
-						_visualWorld[x, y, z].SetActive(_simulation.World[x, y, z].IsAlive());
-					}
-				}
-			}
 			_simulation.Tick();
 		}
 	}
