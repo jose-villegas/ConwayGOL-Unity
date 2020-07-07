@@ -13,6 +13,7 @@ namespace OpenLife.Life
 		public int Generations { get; private set; }
 		public Action<World.World<T>> NextGenerationCompleted { get; private set; }
 		public World<T> World { get => _world; }
+		public World<T> NextGeneration { get => _nextGeneration; }
 
 		public void Start(World.World<T> world)
 		{
