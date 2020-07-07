@@ -18,6 +18,17 @@ namespace OpenLife.Visualization
 
 		private void Start()
 		{
+			Restart();
+		}
+
+		public void Restart()
+		{
+			foreach (Transform child in transform)
+			{
+				GameObject.Destroy(child.gameObject);
+			}
+
+			CancelInvoke("UpdateSimulation");
 			var worldFactory = new Generator<CellView>();
 			_world = worldFactory.Create(_worldSize.x, _worldSize.y, 1);
 
@@ -55,6 +66,7 @@ namespace OpenLife.Visualization
 
 			_simulation = new Simulation<CellView>();
 			_simulation.Start(_world);
+
 			InvokeRepeating("UpdateSimulation", 0, 0.05f);
 		}
 
