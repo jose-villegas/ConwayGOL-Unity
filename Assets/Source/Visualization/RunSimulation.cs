@@ -28,7 +28,7 @@ namespace OpenLife.Visualization
 				GameObject.Destroy(child.gameObject);
 			}
 
-			CancelInvoke("UpdateSimulation");
+			CancelInvoke("UpdateSimulation"); 
 			var worldFactory = new Generator<CellView>();
 			_world = worldFactory.Create(_worldSize.x, _worldSize.y, 1);
 

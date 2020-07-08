@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 17879246478f294459d7587fef22687a
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Broom
+  fontNames:
+  - Broom
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 852d701fe27642649ac4d95eb11229cb, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
